@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-worker
+  labels:
+    app: python-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-worker
+  template:
+    metadata:
+      labels:
+        app: python-worker
+    spec:
+      containers:
+        - name: python-worker
+          image: waylake/datastream-python-worker:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: RABBITMQ_URL
+              value: "amqp://rabbitmq:5672"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: ELASTICSEARCH_URL
+              value: "http://elasticsearch:9200"
+      imagePullSecrets:
+        - name: regcred

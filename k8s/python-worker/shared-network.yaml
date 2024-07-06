@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: NetworkPolicy
+metadata:
+  name: shared-network
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:

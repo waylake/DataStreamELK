@@ -1,0 +1,4 @@
+FROM docker.elastic.co/beats/filebeat:7.13.4
+
+COPY docker-config/filebeat.yml /usr/share/filebeat/filebeat.yml
+COPY logs /app/logs

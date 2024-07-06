@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: default
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+
+    filter {
+      json {
+        source => "message"
+      }
+
+      date {
+        match => ["timestamp", "ISO8601"]
+        target => "@timestamp"
+        remove_field => ["timestamp"]
+      }
+
+      mutate {
+        remove_field => ["@version", "host"]
+        rename => {
+          "ip" => "client_ip"
+          "userAgent" => "user_agent"
+        }
+      }
+    }
+
+    output {
+      elasticsearch {
+        hosts => ["http://elasticsearch:9200"]
+        index => "app-logs-%{+YYYY.MM.dd}"
+      }
+
+      stdout {
+        codec => rubydebug
+      }
+    }

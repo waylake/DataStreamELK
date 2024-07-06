@@ -53,7 +53,7 @@ def callback(ch, method, properties, body):
     result = collect_data(data_params)
 
     # Store result in Elasticsearch
-    es.index(index="collected_data", id=user_id, body=result)
+    es.index(index="insertd_collected_data", id=user_id, body=result)
 
     # Cache result
     redis_client.set(user_id, json.dumps(result))

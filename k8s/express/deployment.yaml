@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express
+  namespace: default
+  labels:
+    app: express
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express
+  template:
+    metadata:
+      labels:
+        app: express
+    spec:
+      containers:
+        - name: express
+          image: waylake/datastream-express:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EXPRESS_PORT
+              value: "8080"
+            - name: RABBITMQ_URL
+              value: "amqp://rabbitmq"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: ELASTICSEARCH_URL
+              value: "http://elasticsearch:9200"
+            - name: LOGSTASH_HOST
+              value: "logstash"
+            - name: LOGSTASH_PORT
+              value: "5044"
+            - name: LOGSTASH_SSL
+              value: "false"
+            - name: LOGSTASH_NODENAME
+              value: "LOG_NODE"
+            - name: NODE_ENV
+              value: "development"
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+      volumes:
+        - name: logs
+          emptyDir: {}
