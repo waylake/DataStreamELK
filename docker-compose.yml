@@ -1,0 +1,85 @@
+version: "3"
+services:
+  express:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.express
+    ports:
+      - "${EXPRESS_PORT}:3000"
+    depends_on:
+      - rabbitmq
+      - redis
+      - elasticsearch
+      - logstash
+      - filebeat
+      - python_worker
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+
+  python_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.python
+    depends_on:
+      - rabbitmq
+      - redis
+      - elasticsearch
+    env_file:
+      - .env
+
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.rabbitmq
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+
+  redis:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.redis
+    ports:
+      - "${REDIS_PORT}:6379"
+
+  elasticsearch:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.elastic
+    ports:
+      - "${ELASTICSEARCH_PORT}:9200"
+      - "${ELASTICSEARCH_TRANSPORT_PORT}:9300"
+    environment:
+      - discovery.type=single-node
+
+  kibana:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.kibana
+    ports:
+      - "${KIBANA_PORT}:5601"
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.logstash
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    depends_on:
+      - elasticsearch
+    env_file:
+      - .env
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.13.4
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/app/logs:ro
+    depends_on:
+      - logstash
+    env_file:
+      - .env
